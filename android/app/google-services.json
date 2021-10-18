@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "700272144554",
+    "project_id": "familicious-b42ff",
+    "storage_bucket": "familicious-b42ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700272144554:android:e37034835e4559e97ba0d3",
+        "android_client_info": {
+          "package_name": "com.example.familicious"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700272144554-chn2i3c5nt97g244bo3h2u6mq1nvuro3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.familicious",
+            "certificate_hash": "ff424b7319c6c7bb3b0b61616fed46b4e2a09c97"
+          }
+        },
+        {
+          "client_id": "700272144554-96khd6mg7oueadjgm3qtrhabfnq28sdf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_dyFAbSfjicclt6RrfYNC5N5gRTcnB9A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700272144554-96khd6mg7oueadjgm3qtrhabfnq28sdf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

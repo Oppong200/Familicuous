@@ -1,9 +1,14 @@
+import 'package:familicious/views/auth/create_account_view.dart';
 import 'package:familicious/views/home/home_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
-  runApp(const MyApp(),
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(
+    const MyApp(),
   );
 }
 
@@ -21,7 +26,6 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color.fromRGBO(249, 251, 252, 1),
         cardColor: Colors.white,
         appBarTheme: const AppBarTheme(
-          
           backgroundColor: Colors.white,
           iconTheme: IconThemeData(
             color: Colors.black,
@@ -32,7 +36,6 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
           elevation: 0,
-          
         ),
         textTheme: const TextTheme(
           bodyText1: TextStyle(
@@ -42,7 +45,21 @@ class MyApp extends StatelessWidget {
             color: Colors.black,
           ),
         ),
-       
+        inputDecorationTheme: const InputDecorationTheme(
+            floatingLabelBehavior: FloatingLabelBehavior.auto,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.black,
+              ),
+            ),
+            labelStyle: TextStyle(
+              color: Colors.black,
+            ),),
+
+            buttonTheme: const ButtonThemeData(
+              colorScheme: ColorScheme.dark(primary: Colors.white),
+              textTheme: ButtonTextTheme.primary,
+            ),
       ),
 
       darkTheme: ThemeData(
@@ -60,13 +77,33 @@ class MyApp extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-       textTheme: const TextTheme(
-         bodyText1: TextStyle(color: Colors.white,
-         ),
-         bodyText2: TextStyle(color: Colors.white,),),
+        textTheme: const TextTheme(
+          
+          bodyText1: TextStyle(
+            color: Colors.white,
+          ),
+          bodyText2: TextStyle(
+            color: Colors.white,
+          ),
+        ).apply(displayColor: Colors.white),
+        inputDecorationTheme: const InputDecorationTheme(
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.white,
+            ),
+          ),
+          labelStyle: TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        buttonTheme: const ButtonThemeData(
+          colorScheme: ColorScheme.light(primary: Colors.black),
+          textTheme: ButtonTextTheme.primary,
+        ),
       ),
-      themeMode: ThemeMode.dark,
-      home: const HomeView(),
+      themeMode: ThemeMode.system,
+      home: const CreateAccountView(),
     );
   }
 }
