@@ -62,6 +62,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
     return Scaffold(
       body: SafeArea(
         child: Form(
+          key: _formKey,
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: ListView(
