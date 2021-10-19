@@ -1,5 +1,4 @@
 import 'package:familicious/views/auth/create_account_view.dart';
-import 'package:familicious/views/home/home_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

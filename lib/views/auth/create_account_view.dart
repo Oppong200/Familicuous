@@ -42,7 +42,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
         ],
         androidUiSettings: const AndroidUiSettings(
             toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
+            toolbarColor: Colors.black,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false),
@@ -198,6 +198,10 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                   onPressed: (){
                     if(_formKey.currentState!.validate()){
                       //all good
+
+                      String name = _nameController.text;
+                      String email = _emailController.text;
+                      String password = _passwordController.text;
                     }else{
                       //validation failed
                       Fluttertoast.showToast(
