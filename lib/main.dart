@@ -1,4 +1,7 @@
 import 'package:familicious/views/auth/create_account_view.dart';
+import 'package:familicious/views/auth/forgot_password_view.dart';
+import 'package:familicious/views/auth/login_view.dart';
+import 'package:familicious/views/home/home_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -65,6 +68,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.black,
         cardColor: Colors.grey.withOpacity(.5),
         appBarTheme: const AppBarTheme(
+          
           backgroundColor: Colors.black,
           titleTextStyle: TextStyle(
             color: Colors.white,
@@ -101,8 +105,8 @@ class MyApp extends StatelessWidget {
           textTheme: ButtonTextTheme.primary,
         ),
       ),
-      themeMode: ThemeMode.system,
-      home: const CreateAccountView(),
+      themeMode: ThemeMode.light,
+      home: const HomeView(),
     );
   }
 }

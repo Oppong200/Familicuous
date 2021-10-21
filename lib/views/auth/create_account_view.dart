@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:familicious/manager/auth_manager.dart';
+import 'package:familicious/views/home/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -27,6 +29,10 @@ class _CreateAccountViewState extends State<CreateAccountView> {
   File? _imageFile;
 
   final emailRegExp = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+
+  final AuthManager _authManager = AuthManager();
+  
+  bool isLoading =false;
 
   Future selectImage({ImageSource imageSource = ImageSource.camera}) async {
     XFile? selectedFile = await _imagePicker.pickImage(source: imageSource);
@@ -67,8 +73,8 @@ class _CreateAccountViewState extends State<CreateAccountView> {
             padding: const EdgeInsets.all(15.0),
             child: ListView(
               children: [
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(90),
+                Center(
+                  child: ClipRRect(
                     child: _imageFile == null
                         ? Image.asset(
                             'assets/1.jpg',
@@ -80,8 +86,11 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                             _imageFile!,
                             width: 130,
                             height: 130,
-                            fit: BoxFit.contain,
-                          )),
+                            fit: BoxFit.cover,
+                          ),
+                    borderRadius: BorderRadius.circular(90),
+                  ),
+                ),
                 TextButton.icon(
                   onPressed: () {
                     showModalBottomSheet(
@@ -147,8 +156,8 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                       'Full Name',
                     ),
                   ),
-                  validator: (value){
-                    if(value!.isEmpty){
+                  validator: (value) {
+                    if (value!.isEmpty) {
                       return 'Full Name is required';
                     }
                   },
@@ -163,14 +172,12 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                     ),
                   ),
                   validator: (value) {
-
                     if (value!.isEmpty) {
                       return 'Email is required';
                     }
                     if (!emailRegExp.hasMatch(value)) {
                       return 'Email is invalid';
                     }
-                    
                   },
                 ),
                 TextFormField(
@@ -183,11 +190,11 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                       'Password',
                     ),
                   ),
-                  validator: (value){
-                    if(value!.isEmpty){
+                  validator: (value) {
+                    if (value!.isEmpty) {
                       return 'Password is required';
                     }
-                    if(value.length<8){
+                    if (value.length < 8) {
                       return 'Password should be 8 characters or more';
                     }
                   },
@@ -195,15 +202,47 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                 const SizedBox(
                   height: 25,
                 ),
-                TextButton(
-                  onPressed: (){
-                    if(_formKey.currentState!.validate()){
+               _authManager.isLoading?const Center(child: CircularProgressIndicator.adaptive()): TextButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
                       //all good
-
+                      bool isLoading=true;
                       String name = _nameController.text;
                       String email = _emailController.text;
                       String password = _passwordController.text;
-                    }else{
+
+                      bool isCreated = await _authManager.createNewUser(
+                          name: name,
+                          email: email,
+                          password: password,
+                          imageFile: _imageFile!);
+
+                      if (isCreated) {
+                        //new user successfuly created
+                        Fluttertoast.showToast(
+                            msg: "Welcome!, $name",
+                            toastLength: Toast.LENGTH_LONG,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.green,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+
+                            //move to homeview
+                            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context)=>const HomeView()), (route) => false);
+                      } else {
+                        //error occurred
+
+                        Fluttertoast.showToast(
+                            msg: _authManager.message,
+                            toastLength: Toast.LENGTH_LONG,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.green,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      }
+                    } else {
                       //validation failed
                       Fluttertoast.showToast(
                           msg: "Please check Input field(s)",

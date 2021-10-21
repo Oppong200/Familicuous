@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:familicious/services/file_upload_services.dart';
 
@@ -8,8 +10,13 @@ import 'package:familicious/services/file_upload_services.dart';
 //with
 class AuthManager with ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FileUploadService _fileUploadService =FileUploadService();
+  static final FirebaseFirestore _firebaseFirestore =
+      FirebaseFirestore.instance;
+
+  final FileUploadService _fileUploadService = FileUploadService();
   String _message = '';
+  CollectionReference userCollection =
+      _firebaseFirestore.collection('users');
   bool _isLoading = false;
 
   String get message => _message; //get
@@ -21,27 +28,85 @@ class AuthManager with ChangeNotifier {
     notifyListeners();
   }
 
-  setisLoading(bool loading) {
+  setIsLoading(bool loading) {
     //set
     _isLoading = loading;
     notifyListeners();
   }
 
-  createNewUser({required String name,required String email,required String password,required File imageFile}) async{
-    
-    await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password).then((UserCredential) async{
-      String? photoUrl = await _fileUploadService.uploadFile(file:imageFile, userUid: UserCredential.user!.uid);
-      if(photoUrl!=null){
+  Future<bool> createNewUser(
+      {required String name,
+      required String email,
+      required String password,
+      required File imageFile}) async {
+    setIsLoading(true);
+    bool isCreated = false;
+    await _firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((userCredential) async {
+      String? photoUrl = await _fileUploadService.uploadFile(
+          file: imageFile, userUid: userCredential.user!.uid);
+      if (photoUrl != null) {
+        //add user info to firestore
+        //saving data to firestore
 
-      }else{
+        await userCollection.doc(userCredential.user!.uid).set({
+          "name": name,
+          "email": email,
+          "picture": photoUrl,
+          //picks the time from the server
+          "createdAt": FieldValue.serverTimestamp(),
+          "user_id": userCredential.user!.uid
+        });
+        isCreated = true;
+      } else {
         setMessage('Image Upload failed');
+        isCreated = false;
+      }
+      setIsLoading(false);
+    }).catchError((onError) {
+      setMessage('$onError');
+      setIsLoading(false);
+    }).timeout(const Duration(seconds: 60), onTimeout: () {
+      setMessage('Please check your internet connection');
+      isCreated = false;
+      setIsLoading(false);
+    });
+    return isCreated;
+  }
+
+  Future<bool> loginUser({required String email,required String password})async{
+    bool isSuccessful =false;
+    //login a user with firebase
+    await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password).then((userCredential) {
+      if(userCredential.user !=null){
+        isSuccessful =true;
+      }else{
+        isSuccessful = false;
+        setMessage('Could not log you in!');
       }
     }).catchError((onError){
       setMessage('$onError');
-    }).timeout(const Duration(seconds: 60), onTimeout: (){
-      setMessage('Please check your internet connection');
+      isSuccessful = false;
+    }).timeout(const Duration(seconds: 60),onTimeout: (){
+      setMessage('Please check your internet connection.');
+      isSuccessful = false;
     });
+    return isSuccessful;
   }
 
+  Future<bool>sendResetLink(String email) async{
+    bool isSent=false;
+    await _firebaseAuth.sendPasswordResetEmail(email: email).then((_){
+      isSent=true;
+    }).catchError((onError){
+      setMessage('$onError');
+      isSent=false;
 
+    }).timeout(const Duration(seconds: 60,),onTimeout: (){
+      setMessage('Please check your internet connection');
+      isSent=false;
+    });
+    return isSent;
+  }
 }
