@@ -88,7 +88,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
-                _authManager.isLoading
+                isLoading
                     ? const Center(child: CircularProgressIndicator.adaptive())
                     : TextButton(
                         onPressed: () async {

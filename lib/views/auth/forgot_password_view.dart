@@ -17,7 +17,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
   bool isLoading=false;
 
-  final GlobalKey<FormState> _formKey = GlobalKey();
+  
   final AuthManager _authManager = AuthManager();
 
   @override
@@ -34,6 +34,13 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             const FlutterLogo(size: 130,),
             const SizedBox(height: 35,),
 
+            Text(
+              'Kindly check your email for the password reset link after submitting your email address',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyText2,
+            ),
+
+            const SizedBox(height: 20,),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -110,7 +117,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                           Theme.of(context).buttonTheme.colorScheme!.background,
                     ),
                     child: Text(
-                      'Login',
+                      'Reset Password',
                       style: Theme.of(context).textTheme.bodyText1!.copyWith(
                             color: Theme.of(context)
                                 .buttonTheme

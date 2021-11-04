@@ -1,8 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:familicious/manager/post_manager.dart';
+import 'package:familicious/views/timeline/create_post_view.dart';
 import 'package:flutter/material.dart';
 import 'package:unicons/unicons.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-class TImelineView extends StatelessWidget {
-  const TImelineView({Key? key}) : super(key: key);
+class TimelineView extends StatelessWidget {
+  TimelineView({Key? key}) : super(key: key);
+
+  final PostManager _postManager = PostManager();
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +18,7 @@ class TImelineView extends StatelessWidget {
           title: const Text('Timeline'),
           actions: [
             IconButton(
-              onPressed: null,
+              onPressed: ()=>Navigator.of(context).push(MaterialPageRoute(builder: (_)=>CreatePostView(),),),
               icon: Icon(
                 UniconsLine.plus_square,
                 color: Theme.of(context).iconTheme.color,
@@ -20,92 +26,121 @@ class TImelineView extends StatelessWidget {
             ),
           ],
         ),
-        body: ListView(
-          children: [
-            Card(
-              elevation: 0,
-              margin: const EdgeInsets.all(15),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    ListTile(
-                      contentPadding: const EdgeInsets.all(0),
-                      leading: const CircleAvatar(
-                        radius: 30,
-                        backgroundImage: NetworkImage(
-                          'https://images.pexels.com/photos/6785291/pexels-photo-6785291.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-                        ),
-                      ),
-                      title: Text(
-                        'Ella Begovic',
-                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      subtitle: Text(
-                        'posted 8 hours ago',
-                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.grey,
-                            ),
-                      ),
-                      trailing: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.more_horiz,
-                          color: Theme.of(context).iconTheme.color,
-                        ),
-                      ),
-                    ),
-                    const Text('data'),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        'https://images.pexels.com/photos/8806013/pexels-photo-8806013.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-                        height: 200,
-                        width: MediaQuery.of(context).size.width,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: StreamBuilder<QuerySnapshot<Map<String,dynamic>?>>(
+          stream: _postManager.getAllPosts(),
+          builder: (context, snapshot) {
+            return ListView.separated(
+              itemBuilder: (context,index){
+                if(snapshot.connectionState ==ConnectionState.waiting && snapshot.data ==null){
+                  return Center(child: CircularProgressIndicator.adaptive(),);
+                }
+                if(snapshot.connectionState == ConnectionState.done && snapshot.data ==null){
+                  return Center(child: Text('No data available'),);
+                }
+
+                return Card(
+                  elevation: 0,
+                  margin: const EdgeInsets.all(15),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: null,
-                              icon: Icon(
-                                UniconsLine.thumbs_up,
-                                color: Theme.of(context).iconTheme.color,
-                              ),
+                        StreamBuilder<Map<String,dynamic>?>(stream: _postManager.getUserInfo(snapshot.data!.docs[index].data()!['user_uid']).asStream(),
+                        builder: (context,userSnapshot){
+                          if(userSnapshot.connectionState == ConnectionState.waiting && userSnapshot.data==null){
+                            return LinearProgressIndicator();
+                          }
+
+                          if(userSnapshot.connectionState == ConnectionState.done && userSnapshot.data==null){
+                            return ListTile();
+                          }
+                          return ListTile(
+                          contentPadding: const EdgeInsets.all(0),
+                          leading: CircleAvatar(
+                            radius: 30,
+                            backgroundImage: NetworkImage(
+                              userSnapshot.data!['picture']!
                             ),
-                            IconButton(
-                              onPressed: null,
-                              icon: Icon(
-                                UniconsLine.comment_lines,
-                                color: Theme.of(context).iconTheme.color,
-                              ),
-                              
-                            ),
-                          ],
-                        ),
-                        IconButton(
+                          ),
+                          title: Text(
+                            userSnapshot.data!['name'],
+                            style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          subtitle: Text(
+                            timeago.format(snapshot.data!.docs[index].data()!['createdAt'].toDate(),allowFromNow: true),
+                            style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.grey,
+                                ),
+                          ),
+                          trailing: IconButton(
                             onPressed: null,
-                            icon:  Icon(
-                              UniconsLine.telegram_alt,
+                            icon: Icon(
+                              Icons.more_horiz,
                               color: Theme.of(context).iconTheme.color,
                             ),
+                          ),
+                        );
+                        
+                        },),
+                        snapshot.data!.docs[index].data()!['description'].isEmpty ? const SizedBox.shrink():Text(snapshot.data!.docs[index].data()!['description']),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            snapshot.data!.docs[index].data()!['image_url'],
+                            height: 200,
+                            width: MediaQuery.of(context).size.width,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: null,
+                                  icon: Icon(
+                                    UniconsLine.thumbs_up,
+                                    color: Theme.of(context).iconTheme.color,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: null,
+                                  icon: Icon(
+                                    UniconsLine.comment_lines,
+                                    color: Theme.of(context).iconTheme.color,
+                                  ),
+                                  
+                                ),
+                              ],
                             ),
+                            IconButton(
+                                onPressed: null,
+                                icon:  Icon(
+                                  UniconsLine.telegram_alt,
+                                  color: Theme.of(context).iconTheme.color,
+                                ),
+                                ),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
-              ),
-            )
-          ],
+                    ),
+                  ),
+                );
+
+              },
+
+              separatorBuilder: (context,index)=>Divider(),
+              itemCount: snapshot.data == null ? 0: snapshot.data!.docs.length,
+              
+            );
+          }
         ));
   }
 }

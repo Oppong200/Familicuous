@@ -18,7 +18,7 @@ class _HomeViewState extends State<HomeView> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   int _currentIndex = 0;
   final List<Widget> _views = [
-    const TImelineView(),
+    TimelineView(),
     const ChatView(),
     const FavouriteView(),
     const ProfileView(),
@@ -28,6 +28,7 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   void initState() {
+    // ignore: todo
     // TODO: implement initState
     // _firebaseAuth.signOut();
     isUserAuth();

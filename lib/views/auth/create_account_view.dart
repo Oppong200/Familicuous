@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:familicious/manager/auth_manager.dart';
+import 'package:familicious/utilities/utils.dart';
 import 'package:familicious/views/home/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:unicons/unicons.dart';
 
@@ -37,24 +37,8 @@ class _CreateAccountViewState extends State<CreateAccountView> {
   Future selectImage({ImageSource imageSource = ImageSource.camera}) async {
     XFile? selectedFile = await _imagePicker.pickImage(source: imageSource);
 
-    File? croppedFile = await ImageCropper.cropImage(
-        sourcePath: selectedFile!.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        androidUiSettings: const AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.black,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
-        iosUiSettings: const IOSUiSettings(
-          minimumAspectRatio: 1.0,
-        ));
+    File? croppedFile = await myImageCropper(selectedFile!.path);
+
 
     setState(() {
       _imageFile = croppedFile;
@@ -162,6 +146,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                     }
                   },
                 ),
+                const SizedBox(height: 15,),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -180,6 +165,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                     }
                   },
                 ),
+                const SizedBox(height: 15,),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
@@ -202,11 +188,14 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                 const SizedBox(
                   height: 25,
                 ),
-               _authManager.isLoading?const Center(child: CircularProgressIndicator.adaptive()): TextButton(
+               isLoading?const Center(child: CircularProgressIndicator.adaptive()): TextButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
+                    if (_formKey.currentState!.validate()&&_imageFile !=null) {
                       //all good
-                      bool isLoading=true;
+                      setState(() {
+                        isLoading = true;
+                      });
+                      
                       String name = _nameController.text;
                       String email = _emailController.text;
                       String password = _passwordController.text;
@@ -216,6 +205,10 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                           email: email,
                           password: password,
                           imageFile: _imageFile!);
+
+                          setState(() {
+                            isLoading = false;
+                          });
 
                       if (isCreated) {
                         //new user successfuly created
@@ -242,16 +235,26 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                             textColor: Colors.white,
                             fontSize: 16.0);
                       }
-                    } else {
+                    } else if(_formKey.currentState!.validate()&&_imageFile ==null){
                       //validation failed
+                      //image was not selected
+                            Fluttertoast.showToast(
+                                msg: "Please select your Profile picture",
+                                toastLength: Toast.LENGTH_LONG,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+                    }else{
                       Fluttertoast.showToast(
-                          msg: "Please check Input field(s)",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
+                                msg: "Please check Input field(s)",
+                                toastLength: Toast.LENGTH_LONG,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
                     }
                   },
                   style: TextButton.styleFrom(
